@@ -16,7 +16,6 @@ client_secret = os.getenv("CLIENT_SECRET")
 # Thread entry for each download.
 def download_runner(track):
     print("Starting runner for", track["name"])
-    
     artists = [x["name"] for x in track["artists"]]
     url = get_youtube_url(track["name"], artists)
 
@@ -45,23 +44,24 @@ if len(tracks) == 0:
     print("No tracks in playlist")
     exit(1)
 
-BATCH_SIZE = 10
+BATCH_SIZE = 5
 
-i = 0
+batch_num = 0
 done = False
+
 while True:
-    print("STARTING BATCH", i)
+    print(f"STARTING BATCH {batch_num}, ({BATCH_SIZE} downloads)")
     
     threads = list()
-    for j in range(BATCH_SIZE):
-        idx = (i * BATCH_SIZE) + j 
+    for i in range(BATCH_SIZE):
+        song_idx = (batch_num * BATCH_SIZE) + i
         
-        if idx == len(tracks):
+        if song_idx >= len(tracks):
             done = True
             continue
         
         # Start all threads.
-        track = tracks[idx]
+        track = tracks[song_idx]
         x = threading.Thread(target=download_runner, args=(track,))
         threads.append(x)
         x.start()
@@ -70,4 +70,4 @@ while True:
     for thread in threads:
         x.join()
         
-    i += 1
+    batch_num += 1
